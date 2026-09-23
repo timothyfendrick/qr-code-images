@@ -1,0 +1,7 @@
+numpy
+os
+struct
+Ipython
+sklearn
+matplotlib
+qrcodegen
