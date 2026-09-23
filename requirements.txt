@@ -1,7 +1,5 @@
 numpy
-os
-struct
 Ipython
-sklearn
+scikit-learn
 matplotlib
 qrcodegen
