@@ -13,7 +13,7 @@ def open_images(file_path):
 
     images = []
     for filename in os.listdir(file_path):
-        if filename.endswith((".png", ".jpg", ".jpeg", "webp")):
+        if filename.endswith((".png", ".jpg", ".jpeg", "webp", "bmp")):
             path = os.path.join(file_path, filename)
             img = plt.imread(path)
 
