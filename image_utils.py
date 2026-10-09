@@ -4,8 +4,35 @@ from matplotlib.image import imread
 import numpy as np
 
 import math
+import struct
+import io
+
 
 from sklearn.decomposition import PCA, IncrementalPCA
+
+def save_matrix(matrix, filename):
+    with open(filename, 'wb') as f:
+        # write header — rows and cols as integers
+        rows, cols = matrix.shape
+        f.write(struct.pack('ii', rows, cols))   # 4 bytes each
+        # write the data
+        f.write(matrix.tobytes())
+
+def matrix_payload(matrix):
+
+    rows, cols = matrix.shape
+    data = struct.pack('ii', rows, cols)
+    data += matrix.tobytes()
+
+    return data
+
+def unpack_payload(payload):
+    f = io.BytesIO(payload)   # treat bytes like a file
+    rows, cols = struct.unpack('ii', f.read(8))
+    print(rows, cols)
+    data = np.frombuffer(f.read(), dtype=np.float64)
+    return data.reshape(rows, cols)
+
 
 # Returns an array of images in the directory, in black and white.
 def open_images(file_path):
@@ -26,7 +53,7 @@ def open_images(file_path):
     return images
 
 
-def consruct_image(image_bw, percent_components=95):
+def construct_image(image_bw, percent_components=95):
     pca = PCA()
     pca.fit(image_bw)
 
@@ -41,6 +68,21 @@ def consruct_image(image_bw, percent_components=95):
     image_recon = ipca.inverse_transform(ipca.fit_transform(image_bw))
 
     return image_recon
+
+def get_compressed_image_data(image_bw, percent_components=95):
+    pca = PCA()
+    pca.fit(image_bw)
+
+    # Getting the cumulative variance
+
+    var_cumu = np.cumsum(pca.explained_variance_ratio_)*100
+
+    # How many PCs explain 95% of the variance?
+    k = np.argmax(var_cumu>percent_components)
+
+    ipca = IncrementalPCA(n_components=k)
+    return ipca.fit_transform(image_bw)
+
 
 
 def plot_image(image_recon):
